@@ -24,31 +24,35 @@ import {
 } from "ionicons/icons";
 import { useForm } from "../hooks/useForm";
 import { Route } from "workbox-routing";
-export const  ModalView =()=> {
-  const {user,password,onInputChange}= useForm({user:'',password:''});
+export const ModalView = () => {
+  const { user, password, onInputChange } = useForm({ user: "", password: "" });
   const [showModal, setShowModal] = useState(false);
   const [useExist, setUseExist] = useState(false);
-  useExist ? window.location.reload() : console.log("HI");
+  useExist ? window.location.reload() : console.log("");
   const setUserLocal = (e) => {
     e.preventDefault();
-    localStorage.setItem("Gestor",JSON.stringify(user));
+    localStorage.setItem("Gestor", JSON.stringify(user));
     setShowModal(false);
     setUseExist(true);
   };
   return (
-    <IonPage id="ion-principal" >
-      <IonHeader >
-      </IonHeader>
-      <IonContent  className="ion-padding ion-text-center">
+    <IonPage id="ion-principal">
+      <IonHeader></IonHeader>
+      <IonContent className="ion-padding ion-text-center">
         <IonIcon icon={alertCircleOutline} id="alert" color="danger"></IonIcon>
         <IonHeader id="ion-padding">
           <IonText id="example-text">
             Para el uso de la aplicacion se debe crear un usuario unico Este
-            usuario debe ser el del MBcase porque sera por el cual se filtre la informacion
+            usuario debe ser el del MBcase porque sera por el cual se filtre la
+            informacion
             <p>Una vez creado el usuario no se podra cambiar</p>
           </IonText>
         </IonHeader>
-        <IonButton id="ion-botones"  color="dark" expand="block" onClick={()=>setShowModal(true)}>
+        <IonButton
+          id="ion-botones"
+          expand="small"
+          onClick={() => setShowModal(true)}
+        >
           Registrar Usuario
           <IonIcon slot="end" icon={paperPlane} size="small"></IonIcon>
         </IonButton>
@@ -66,27 +70,39 @@ export const  ModalView =()=> {
               <IonList id="formLogin">
                 <IonItem>
                   <IonLabel position="floating">Usuario</IonLabel>
-                  <IonInput name="user"  value={user} onIonChange={onInputChange} required placeholder="Usuario Unico"></IonInput>
+                  <IonInput
+                    name="user"
+                    value={user}
+                    onIonChange={onInputChange}
+                    required
+                    placeholder="Usuario Unico"
+                  ></IonInput>
                 </IonItem>
                 <IonItem>
                   <IonLabel position="floating">Contraseña</IonLabel>
-                  <IonInput name="password" value={password} onIonChange={onInputChange} required type="password">
-                  </IonInput>
+                  <IonInput
+                    name="password"
+                    value={password}
+                    onIonChange={onInputChange}
+                    required
+                    type="password"
+                  ></IonInput>
                 </IonItem>
               </IonList>
-              <IonButton
-                shape="round"
-                color="dark"
-                expand="full"
-                type="submit"
-              >
-                Crear
-                <IonIcon icon={paperPlaneOutline} size="small"  />
-              </IonButton>
+               
+              <IonButton shape="round" expand="full" id="ion-boton" type="submit">
+                    Crear
+                    <IonIcon
+                      type="submit"
+                      slot="end"
+                      icon={paperPlaneOutline}
+                      size="small"
+                    />
+                  </IonButton>
             </form>
           </IonContent>
         </IonModal>
       </IonContent>
     </IonPage>
   );
-}
+};

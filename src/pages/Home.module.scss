@@ -32,6 +32,16 @@
 
   .results {
     --color: #13203D;
+    color: red;
+    font-family: 'Courier New', Courier, monospace;
+    margin-bottom: 15px;
+    margin-top: 5px;
+    ion-icon{
+      margin-left: 115px;
+      font-size: 28px;
+      margin-top: 12px;
+      text-align:end;
+    }
   }
 
   ion-searchbar {

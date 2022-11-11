@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Geolocation, Geoposition } from "@ionic-native/geolocation";
-import { Message, getMessage } from "../data/messages";
+import {  getMessage } from "../data/messages";
 import {
-  IonAccordion,
   IonBackButton,
   IonButton,
   IonButtons,
@@ -37,26 +36,24 @@ import {
   useIonViewWillEnter,
 } from "@ionic/react";
 import {
-  arrowBackOutline,
-  arrowForward,
-  bookmarkOutline,
   cartOutline,
   chatboxEllipsesOutline,
-  ellipsisHorizontal,
-  imageOutline,
-  personAddOutline,
+  locationOutline,
+  create
 } from "ionicons/icons";
 
 import { personCircle } from "ionicons/icons";
 import { useParams } from "react-router";
 import styles from "./ViewMessage.module.scss";
 
+
 interface LocationError {
   showError: boolean;
   message?: string;
 }
 
-function ViewMessage({ networkStatus, connectedWithInternet }: any) {
+function ViewMessage() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const params = useParams<{ id: string }>();
   const [form, setForm] = useState({
     cedula: 0,
@@ -71,31 +68,25 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
     longitud: 0,
     gestor: "",
   });
-  const { gestion, cobranza, observacion, contacto, plazoNuevo, valorRenegocio } =
-    form;
+  const {
+    gestion,
+    cobranza,
+    observacion,
+    contacto,
+    plazoNuevo,
+    valorRenegocio,
+  } = form;
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<LocationError>({ showError: false });
   const [postion, setPosition] = useState<Geoposition>();
+  const [postForm, setPostForm] = useState<boolean>(false);
   const [option, setOptions] = useState({
     value1: "",
     value2: "",
     value3: "",
     value4: "",
   });
-
-  // useEffect(() => {
-  //   Network.onConnect().subscribe(()=>{
-  //     console.log("conectado");
-  //   });
-  // }, []);
-
-  // console.log(Network.onConnect().subscribe(()=>{
-  //   console.log("conectado");
-  // }));
-
   const msg = getMessage(parseInt(params.id, 10));
-  // console.log("renderiza");
-
   const getLocation = async () => {
     setLoading(true);
     try {
@@ -117,6 +108,17 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const handleStatusChange = () => {
+      setIsOnline(navigator.onLine);
+    };
+    window.addEventListener("online", handleStatusChange);
+    window.addEventListener("offline", handleStatusChange);
+    return () => {
+      window.removeEventListener("online", handleStatusChange);
+      window.removeEventListener("offline", handleStatusChange);
+    };
+  }, [isOnline]);
   const onChangeForm = (e: any) => {
     const gestorIN = JSON.parse(localStorage.getItem("Gestor") || "");
     const cedula = cedulaCliente;
@@ -186,21 +188,29 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
     valorCuota,
     numeroCredito,
   } = msg;
-  const outputForm = (e: any) => {
+  const outputForm = async (e: any) => {
     e.preventDefault();
-    // console.log(JSON.stringify(form));
-    console.log(
-      `http://200.7.249.20/vision360ServicioCliente/Api_rest_movil/controller/categoria.php?op=pull&data=${JSON.stringify(
-        form
-      )}`
-    );
-    fetch(
-      `http://200.7.249.20/vision360ServicioCliente/Api_rest_movil/controller/categoria.php?op=pull&data=${JSON.stringify(
-        form
-      )}`
-    )
-      .then((response) => response.json())
-      .then((data) => console.log(data));
+    setPostForm(true);
+    if(isOnline){
+      try {
+        await fetch(
+          `http://200.7.249.20/vision360ServicioCliente/Api_rest_movil/controller/categoria.php?op=pull&data=${JSON.stringify(
+            form
+          )}`
+        );
+      } catch {}
+    }else{
+      var local = [];
+      var dataInLocalStorage = localStorage.getItem("Storage");
+      if(dataInLocalStorage){
+        local = Array.from(JSON.parse(dataInLocalStorage));
+        local.push(form);
+        localStorage.setItem("Storage", JSON.stringify(local));        
+      }else{
+        localStorage.setItem("Storage",JSON.stringify(form));    
+      }
+    }
+    
   };
 
   return (
@@ -282,22 +292,7 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
                                     {direccionReferencia}
                                   </IonCardTitle>
                                 </IonCol>
-                              </IonRow>
-                              {/* <IonRow>
-                            <IonCol size="12">
-                                <IonList role="feed">
-                                  <IonItem role="article">
-                                        {direccionReferencia}
-                                  </IonItem>
-                                </IonList>
-                            </IonCol>
-                            <IonCol size="6">
-                              <IonButton color="primary" expand="block">
-                                <IonIcon icon={personAddOutline} size="small" />
-                                &nbsp; Follow
-                              </IonButton>
-                            </IonCol>
-                          </IonRow> */}
+                              </IonRow>  
                             </IonCardContent>
                           </IonCard>
                         </IonSlide>
@@ -375,23 +370,7 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
                                     </IonCol>
                                   </IonRow>
                                 </IonCol>
-                              </IonRow>
-
-                              {/* <IonRow>
-                            <IonCol size="12">
-                                <IonList role="feed">
-                                  <IonItem role="article">
-                                        {direccionReferencia}
-                                  </IonItem>
-                                </IonList>
-                            </IonCol>
-                            <IonCol size="6">
-                              <IonButton color="primary" expand="block">
-                                <IonIcon icon={personAddOutline} size="small" />
-                                &nbsp; Follow
-                              </IonButton>
-                            </IonCol>
-                          </IonRow> */}
+                              </IonRow>                
                             </IonCardContent>
                           </IonCard>
                         </IonSlide>
@@ -409,7 +388,7 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
                               color="secondary"
                             />
                             <IonCardSubtitle>Gestion</IonCardSubtitle>
-                          </IonRow>
+                          </IonRow>                        
                         </IonCardHeader>
                         <IonCardContent>
                           <form onSubmit={outputForm}>
@@ -471,33 +450,32 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
                               </IonItem>
                               {gestion == "Renegociación" ? (
                                 <IonItem>
-                                <IonRow>
-                                  <IonCol size="6">
-                                    <IonLabel position="floating">
-                                      Nuevo Plazo
-                                    </IonLabel>
-                                    <IonInput
-                                      type="text"
-                                      name="plazoNuevo"
-                                      value={plazoNuevo}
-                                      onIonChange={onChangeForm}
-                                    ></IonInput>
-                                  </IonCol>
                                   <IonRow>
-                                <IonCol>
-                                    <IonLabel position="floating">
-                                      Valor Renegocio
-                                    </IonLabel>
-                                    <IonInput
-                                      type="text"
-                                      name="valorRenegocio"
-                                      value={valorRenegocio}
-                                      onIonChange={onChangeForm}
-                                    ></IonInput>
-                                  </IonCol>
+                                    <IonCol size="6">
+                                      <IonLabel position="floating">
+                                        Nuevo Plazo
+                                      </IonLabel>
+                                      <IonInput
+                                        type="text"
+                                        name="plazoNuevo"
+                                        value={plazoNuevo}
+                                        onIonChange={onChangeForm}
+                                      ></IonInput>
+                                    </IonCol>
+                                    <IonRow>
+                                      <IonCol>
+                                        <IonLabel position="floating">
+                                          Valor Renegocio
+                                        </IonLabel>
+                                        <IonInput
+                                          type="text"
+                                          name="valorRenegocio"
+                                          value={valorRenegocio}
+                                          onIonChange={onChangeForm}
+                                        ></IonInput>
+                                      </IonCol>
+                                    </IonRow>
                                   </IonRow>
-                                </IonRow>
-                                
                                 </IonItem>
                               ) : (
                                 <IonItemDivider hidden />
@@ -544,10 +522,11 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
                                   }
                                   duration={3000}
                                 />
-                                <IonButton onClick={getLocation}>
+                                {/* <IonButton onClick={getLocation}>
                                   Obtener Coordenadas...
-                                </IonButton>
-
+                                </IonButton> */}
+                                <IonLabel color="medium"> Obtener coordenadas</IonLabel>
+                                <IonIcon icon={locationOutline} slot="end" onClick={getLocation}></IonIcon>
                                 {postion ? (
                                   <IonItem>
                                     <IonInput
@@ -568,7 +547,19 @@ function ViewMessage({ networkStatus, connectedWithInternet }: any) {
                                 )}
                               </IonItem>
                             </IonList>
-                            <IonButton type="submit"> guardar </IonButton>
+                            <IonToast
+                              isOpen={postForm}
+                              message={"Registro Ingresado correctamente"}
+                              onDidDismiss={()=>setPostForm(false)}
+                              duration={3000}
+                            />
+                            <IonButtons slot="primary" className={styles.IconSubmit}>
+                              <IonButton fill="outline">
+                                Registar
+                                <IonIcon slot="end" icon={create}></IonIcon>
+                              </IonButton>
+                            </IonButtons>
+                           
                           </form>
                         </IonCardContent>
                       </IonCard>
