@@ -36,29 +36,24 @@ export const  ModalView =()=> {
     setUseExist(true);
   };
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Gestores de Terreno</IonTitle>
-        </IonToolbar>
+    <IonPage id="ion-principal" >
+      <IonHeader >
       </IonHeader>
-      <IonContent className="ion-padding ion-text-center">
+      <IonContent  className="ion-padding ion-text-center">
         <IonIcon icon={alertCircleOutline} id="alert" color="danger"></IonIcon>
-        <IonHeader className="ion-padding">
-          <IonText>
+        <IonHeader id="ion-padding">
+          <IonText id="example-text">
             Para el uso de la aplicacion se debe crear un usuario unico Este
             usuario debe ser el del MBcase porque sera por el cual se filtre la informacion
-          </IonText>
-          <IonText>
             <p>Una vez creado el usuario no se podra cambiar</p>
           </IonText>
         </IonHeader>
-        <IonButton  expand="block" onClick={()=>setShowModal(true)}>
+        <IonButton id="ion-botones"  color="dark" expand="block" onClick={()=>setShowModal(true)}>
           Registrar Usuario
           <IonIcon slot="end" icon={paperPlane} size="small"></IonIcon>
         </IonButton>
         <IonModal id="example-modal" isOpen={showModal}>
-          <IonContent>
+          <IonContent id="modal-content">
             <IonToolbar>
               <IonTitle>Registro Usuario</IonTitle>
               <IonButtons slot="end">
@@ -81,12 +76,12 @@ export const  ModalView =()=> {
               </IonList>
               <IonButton
                 shape="round"
-                color="tertiary"
+                color="dark"
                 expand="full"
                 type="submit"
               >
                 Crear
-                <IonIcon icon={paperPlaneOutline} size="small" />
+                <IonIcon icon={paperPlaneOutline} size="small"  />
               </IonButton>
             </form>
           </IonContent>

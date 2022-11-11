@@ -20,7 +20,9 @@ const Home: React.FC = () => {
   // const data = getMessages();
   const [messages, setMessages] = useState(datos);
   const [ results, setResults ] = useState(messages);
-  // console.log(messages);
+  messages.length == 0 && usuarioStatic ? setTimeout(() => {
+    window.location.reload();
+  }, 100): console.log("datos");
   
   // const search = (e : any) => {
 	// 	const searchTerm = e.currentTarget.value;
@@ -48,11 +50,10 @@ const Home: React.FC = () => {
     
   }
 
-  return (
+  return (    
     <IonPage className={styles.page}>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Usuarios a Gestionar</IonTitle>
         </IonToolbar>
       </IonHeader>
       {!usuarioStatic ? <ModalView/> : 
@@ -63,7 +64,7 @@ const Home: React.FC = () => {
           <IonSearchbar
             onKeyUp={(e) => search(e)}
             onKeyPress={(e) => search(e)}
-            placeholder="Search..."
+            placeholder="Buscar..."
             slot="end"
           />
           <IonList>

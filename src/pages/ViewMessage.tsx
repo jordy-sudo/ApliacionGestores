@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Geolocation, Geoposition } from "@ionic-native/geolocation";
 import { Message, getMessage } from "../data/messages";
 import {
   IonAccordion,
@@ -15,16 +16,23 @@ import {
   IonGrid,
   IonHeader,
   IonIcon,
+  IonInput,
   IonItem,
+  IonItemDivider,
   IonLabel,
   IonList,
+  IonLoading,
   IonPage,
+  IonRadio,
+  IonRadioGroup,
   IonRow,
   IonSelect,
   IonSelectOption,
   IonSlide,
   IonSlides,
   IonText,
+  IonTextarea,
+  IonToast,
   IonToolbar,
   useIonViewWillEnter,
 } from "@ionic/react";
@@ -43,14 +51,129 @@ import { personCircle } from "ionicons/icons";
 import { useParams } from "react-router";
 import styles from "./ViewMessage.module.scss";
 
-function ViewMessage() {
-  const [message, setMessage] = useState<Message>();
+interface LocationError {
+  showError: boolean;
+  message?: string;
+}
+
+function ViewMessage({ networkStatus, connectedWithInternet }: any) {
   const params = useParams<{ id: string }>();
-  const msg = getMessage(parseInt(params.id, 10));
-  // console.log(msg);
-  useIonViewWillEnter(() => {
-    setMessage(msg);
+  const [form, setForm] = useState({
+    cedula: 0,
+    operacion: 0,
+    gestion: "",
+    cobranza: "",
+    observacion: "",
+    contacto: "",
+    plazoNuevo: 0,
+    valorRenegocio: 0,
+    latitud: 0,
+    longitud: 0,
+    gestor: "",
   });
+  const { gestion, cobranza, observacion, contacto, plazoNuevo, valorRenegocio } =
+    form;
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<LocationError>({ showError: false });
+  const [postion, setPosition] = useState<Geoposition>();
+  const [option, setOptions] = useState({
+    value1: "",
+    value2: "",
+    value3: "",
+    value4: "",
+  });
+
+  // useEffect(() => {
+  //   Network.onConnect().subscribe(()=>{
+  //     console.log("conectado");
+  //   });
+  // }, []);
+
+  // console.log(Network.onConnect().subscribe(()=>{
+  //   console.log("conectado");
+  // }));
+
+  const msg = getMessage(parseInt(params.id, 10));
+  // console.log("renderiza");
+
+  const getLocation = async () => {
+    setLoading(true);
+    try {
+      const position = await Geolocation.getCurrentPosition();
+      setPosition(position);
+      setForm({
+        ...form,
+        latitud: position.coords.latitude,
+        longitud: position.coords.longitude,
+      });
+      setLoading(false);
+      setError({ showError: false, message: undefined });
+    } catch (e: any) {
+      const message =
+        e.message.length > 0
+          ? e.message
+          : "No se pudo obtener las coordenadas verifica los permisos";
+      setError({ showError: true, message });
+      setLoading(false);
+    }
+  };
+  const onChangeForm = (e: any) => {
+    const gestorIN = JSON.parse(localStorage.getItem("Gestor") || "");
+    const cedula = cedulaCliente;
+    const op = numeroCredito;
+    const { name, value } = e.target;
+    if (name == "gestion") {
+      switch (value) {
+        case "Renegociación":
+          setOptions({
+            value1: "Renegociación valor 0",
+            value2: "Renegociación abono",
+            value3: "Renegociación",
+            value4: "",
+          });
+          break;
+        case "Gestion Cobranzas":
+          setOptions({
+            value1: "Visita contactada",
+            value2: "Visita no contactada",
+            value3: "Pago",
+            value4: "",
+          });
+          break;
+        case "Recojo":
+          setOptions({
+            value1: "Recojo",
+            value2: "Recojo con abono",
+            value3: "",
+            value4: "",
+          });
+          break;
+        case "Verificación":
+          setOptions({
+            value1: "Exitosa",
+            value2: "No Exitosa",
+            value3: "",
+            value4: "",
+          });
+          break;
+        case "Matriculación":
+          setOptions({
+            value1: "Exitosa",
+            value2: "No Exitosa",
+            value3: "",
+            value4: "",
+          });
+          break;
+      }
+    }
+    setForm({
+      ...form,
+      [name]: value,
+      cedula: cedula,
+      operacion: op,
+      gestor: gestorIN,
+    });
+  };
   const {
     nombreCliente,
     cedulaCliente,
@@ -60,45 +183,24 @@ function ViewMessage() {
     plazoOperacion,
     saldoCartera,
     telDomicilio,
-    usuario,
     valorCuota,
     numeroCredito,
   } = msg;
-  const changeSelectValues = (e: any) => {
-    const valor = e.target.value;
-    const element: HTMLElement = document.getElementById(
-      "gestion"
-    ) as HTMLElement;
-    // console.log(element);
-    return (element.innerHTML = `<IonSelect placeholder="Gestion Cobranza"></IonSelect>`);
-
-    // switch (valor) {
-    //   case 'Renegociación':
-    //     element.innerHTML=`<IonSelect><IonSelectOption value="Renegociación valor 0">Renegociación valor 0</IonSelectOption>
-    //     <IonSelectOption value="Renegociación abono">Renegociación abono</IonSelectOption>
-    //     <IonSelectOption value="Renegociación">Renegociación</IonSelectOption></IonSelect>`;
-    //     break;
-    //   case 'Gestión Cobranza':
-    //     element.innerHTML=`<IonSelectOption value="Visita contactada">Visita contactada</IonSelectOption>
-    //     <IonSelectOption value="Visita no contactada">Visita no contactada</IonSelectOption>
-    //     <IonSelectOption value="Pago">Pago</IonSelectOption>`;
-    //     break;
-    //   case 'Recojo' :
-    //     element.innerHTML=`<IonSelectOption value="Recojo">Recojo</IonSelectOption>
-    //     <IonSelectOption value="Recojo con abono">Recojo con abono</IonSelectOption>`;
-    //     break;
-    //   case 'Verificación' :
-    //     element.innerHTML=`<IonSelectOption value="Exitosa">Exitosa</IonSelectOption>
-    //     <IonSelectOption value="No Exitosa">No Exitosa</IonSelectOption>`;
-    //     break;
-    //   case 'Matriculación' :
-    //     element.innerHTML=`<IonSelectOption value="Exitosa">Exitosa</IonSelectOption>
-    //     <IonSelectOption value="No Exitosa">No Exitosa</IonSelectOption>`;
-    //     break;
-    //   default:
-    //     element.innerHTML=`''`;
-    //     break;
-    // }
+  const outputForm = (e: any) => {
+    e.preventDefault();
+    // console.log(JSON.stringify(form));
+    console.log(
+      `http://200.7.249.20/vision360ServicioCliente/Api_rest_movil/controller/categoria.php?op=pull&data=${JSON.stringify(
+        form
+      )}`
+    );
+    fetch(
+      `http://200.7.249.20/vision360ServicioCliente/Api_rest_movil/controller/categoria.php?op=pull&data=${JSON.stringify(
+        form
+      )}`
+    )
+      .then((response) => response.json())
+      .then((data) => console.log(data));
   };
 
   return (
@@ -106,15 +208,15 @@ function ViewMessage() {
       <IonHeader translucent>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton text="Inbox" defaultHref="/home"></IonBackButton>
+            <IonBackButton text="Regresar" defaultHref="/home"></IonBackButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
 
       <IonContent fullscreen>
-        {message ? (
+        {msg ? (
           <>
-            <IonPage className={styles.home}>
+            <IonContent className={styles.home}>
               <IonHeader>
                 <IonToolbar></IonToolbar>
               </IonHeader>
@@ -160,9 +262,14 @@ function ViewMessage() {
                                   <IonRow className={styles.profileStats}>
                                     <IonCol className={styles.profileStat}>
                                       <IonCardTitle>
-                                        {telDomicilio.substring(0, 1) == 0
-                                          ? telDomicilio
-                                          : 0 + telDomicilio.substring(0, 8)}
+                                        {telDomicilio == undefined
+                                          ? "No posee"
+                                          : `${
+                                              telDomicilio.substring(0, 1) == 0
+                                                ? telDomicilio
+                                                : 0 +
+                                                  telDomicilio.substring(0, 9)
+                                            }`}
                                       </IonCardTitle>
                                       <IonCardSubtitle>Celular</IonCardSubtitle>
                                     </IonCol>
@@ -172,9 +279,8 @@ function ViewMessage() {
                               <IonRow className={styles.profileStats}>
                                 <IonCol className={styles.profileStat}>
                                   <IonCardTitle>
-                                          {direccionReferencia}
+                                    {direccionReferencia}
                                   </IonCardTitle>
-                            
                                 </IonCol>
                               </IonRow>
                               {/* <IonRow>
@@ -259,7 +365,9 @@ function ViewMessage() {
                                     </IonCol>
                                     <IonCol className={styles.profileStat}>
                                       <IonCardTitle>
-                                        {coutasPendientes.substring(0, 3)}
+                                        {!coutasPendientes
+                                          ? "no posee"
+                                          : coutasPendientes}
                                       </IonCardTitle>
                                       <IonCardSubtitle>
                                         Cuotas Pendientes
@@ -296,18 +404,23 @@ function ViewMessage() {
                       <IonCard className={styles.profileCard}>
                         <IonCardHeader>
                           <IonRow className={styles.profileStatus}>
-                            <IonIcon icon={chatboxEllipsesOutline}  color="secondary"/>
+                            <IonIcon
+                              icon={chatboxEllipsesOutline}
+                              color="secondary"
+                            />
                             <IonCardSubtitle>Gestion</IonCardSubtitle>
                           </IonRow>
                         </IonCardHeader>
                         <IonCardContent>
-                          <form>
+                          <form onSubmit={outputForm}>
                             <IonList>
                               <IonItem>
                                 <IonSelect
                                   placeholder="Tipo De Gestion"
                                   interface="action-sheet"
-                                  onIonChange={(e) => changeSelectValues(e)}
+                                  name="gestion"
+                                  value={gestion}
+                                  onIonChange={onChangeForm}
                                 >
                                   <IonSelectOption value="Renegociación">
                                     Renegociación
@@ -326,8 +439,136 @@ function ViewMessage() {
                                   </IonSelectOption>
                                 </IonSelect>
                               </IonItem>
-                              <IonItem id="gestion"></IonItem>
+                              <IonItem id="rene">
+                                <IonSelect
+                                  interface="action-sheet"
+                                  placeholder="Gestion Cobranzas"
+                                  name="cobranza"
+                                  value={cobranza}
+                                  onIonChange={onChangeForm}
+                                >
+                                  <IonSelectOption value={option.value1}>
+                                    {option.value1}
+                                  </IonSelectOption>
+                                  <IonSelectOption value={option.value2}>
+                                    {option.value2}
+                                  </IonSelectOption>
+                                  {option.value3 ? (
+                                    <IonSelectOption value={option.value3}>
+                                      {option.value3}
+                                    </IonSelectOption>
+                                  ) : (
+                                    ""
+                                  )}
+                                  {option.value4 ? (
+                                    <IonSelectOption value={option.value4}>
+                                      {option.value4}
+                                    </IonSelectOption>
+                                  ) : (
+                                    ""
+                                  )}
+                                </IonSelect>
+                              </IonItem>
+                              {gestion == "Renegociación" ? (
+                                <IonItem>
+                                <IonRow>
+                                  <IonCol size="6">
+                                    <IonLabel position="floating">
+                                      Nuevo Plazo
+                                    </IonLabel>
+                                    <IonInput
+                                      type="text"
+                                      name="plazoNuevo"
+                                      value={plazoNuevo}
+                                      onIonChange={onChangeForm}
+                                    ></IonInput>
+                                  </IonCol>
+                                  <IonRow>
+                                <IonCol>
+                                    <IonLabel position="floating">
+                                      Valor Renegocio
+                                    </IonLabel>
+                                    <IonInput
+                                      type="text"
+                                      name="valorRenegocio"
+                                      value={valorRenegocio}
+                                      onIonChange={onChangeForm}
+                                    ></IonInput>
+                                  </IonCol>
+                                  </IonRow>
+                                </IonRow>
+                                
+                                </IonItem>
+                              ) : (
+                                <IonItemDivider hidden />
+                              )}
+                              <IonItem>
+                                <IonTextarea
+                                  placeholder="Observacion y detalle de la Gestion"
+                                  clearOnEdit={true}
+                                  name="observacion"
+                                  value={observacion}
+                                  onIonChange={onChangeForm}
+                                ></IonTextarea>
+                              </IonItem>
+                              <IonItem>
+                                <IonSelect
+                                  placeholder="Tipo De Contacto"
+                                  interface="action-sheet"
+                                  name="contacto"
+                                  value={contacto}
+                                  onIonChange={onChangeForm}
+                                >
+                                  <IonSelectOption value="Contactado">
+                                    Contactado
+                                  </IonSelectOption>
+                                  <IonSelectOption value="No Contactado">
+                                    No Contactado
+                                  </IonSelectOption>
+                                </IonSelect>
+                              </IonItem>
+                              <IonItem>
+                                <IonLoading
+                                  isOpen={loading}
+                                  message={"Obteniendo cordenadas..."}
+                                  onDidDismiss={() => setLoading(false)}
+                                />
+                                <IonToast
+                                  isOpen={error.showError}
+                                  message={error.message}
+                                  onDidDismiss={() =>
+                                    setError({
+                                      message: undefined,
+                                      showError: false,
+                                    })
+                                  }
+                                  duration={3000}
+                                />
+                                <IonButton onClick={getLocation}>
+                                  Obtener Coordenadas...
+                                </IonButton>
+
+                                {postion ? (
+                                  <IonItem>
+                                    <IonInput
+                                      type="text"
+                                      name="latitud"
+                                      value={postion.coords.latitude}
+                                      onIonChange={onChangeForm}
+                                    ></IonInput>
+                                    <IonInput
+                                      type="text"
+                                      value={postion.coords.longitude}
+                                      name="longitud"
+                                      onIonChange={onChangeForm}
+                                    ></IonInput>
+                                  </IonItem>
+                                ) : (
+                                  <IonText hidden></IonText>
+                                )}
+                              </IonItem>
                             </IonList>
+                            <IonButton type="submit"> guardar </IonButton>
                           </form>
                         </IonCardContent>
                       </IonCard>
@@ -372,7 +613,7 @@ function ViewMessage() {
                   </IonRow> */}
                 </IonGrid>
               </IonContent>
-            </IonPage>
+            </IonContent>
           </>
         ) : (
           <div>Message not found</div>
