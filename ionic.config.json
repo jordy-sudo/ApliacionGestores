@@ -4,8 +4,10 @@
     "capacitor": {}
   },
   "type": "react",
-  "proxies": [{
-    "path": "/api",
-    "proxyUrl": "http://localhost:3000/"
-  }]
+  "proxies": [
+    {
+      "path": "/api",
+      "proxyUrl": "http://localhost:3000/"
+    }
+  ]
 }
